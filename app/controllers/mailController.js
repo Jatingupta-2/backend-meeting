@@ -5,6 +5,7 @@ const mongooose= require('mongoose')
 const userModel= mongooose.model('User')
 const passwordLib= require('./../libs/generatePasswordLib')
 const check= require('./../libs/checkLib')
+const response = require('./../libs/responseLib')
 
 // async..await is not allowed in global scope, must use a wrapper
 let sendmail=(req,res)=>{
@@ -61,6 +62,12 @@ let sendmail=(req,res)=>{
                   
                     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
                     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+
+                   
+                    let apiResponse= response.generate(false, 'Mail Sent Successfully', 200, null)
+                    console.log(apiResponse)
+                    res.send(apiResponse)
+                    
                   }main().catch(console.error);
 
 
@@ -73,6 +80,64 @@ let sendmail=(req,res)=>{
 }
 
 
+
+let editMail=(req,res)=>{
+  console.log(req.body.email,req.body.subject,req.body.text)
+    let email= req.body.email;
+    let subject=req.body.subject;
+    let text= req.body.text;    
+                  
+  
+                  async function main(){
+  
+    
+                      // create reusable transporter object using the default SMTP transport
+                      let transporter = nodemailer.createTransport({
+                        service:'gmail' ,// true for 465, false for other ports
+                        tls: { rejectUnauthorized: false },
+                        auth: {
+                          user: 'noreplyjatingupta@gmail.com', // generated ethereal user
+                          pass: 'Jatin@123' // generated ethereal password
+                        }
+                      });
+                    
+                      // setup email data with unicode symbols
+                      let mailOptions = {
+                        from: "noreplyjatingupta@gmail.com", // sender address
+                        to: email, // list of receivers
+                        subject: subject, // Subject line
+                        text: text
+                        
+                      };
+                    
+                      // send mail with defined transport object
+                      let info = await transporter.sendMail(mailOptions)
+                    
+                      console.log("Message sent: %s", info.messageId);
+                      // Preview only available when sending through an Ethereal account
+                      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+                    
+                      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+                      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+  
+                     
+              
+                      let apiResponse= response.generate(false, 'Mail Sent Successfully', 200, null)
+                    console.log(apiResponse)
+                    res.send(apiResponse)
+                    
+                    }main().catch(console.error);
+  
+  
+           
+  
+  
+  
+  
+  }
+
+
 module.exports={
-    main:sendmail
+    main:sendmail,
+    editMail:editMail
 }

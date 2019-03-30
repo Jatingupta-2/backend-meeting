@@ -1,373 +1,350 @@
+const express = require('express');
+const router = express.Router();
+const blogController = require("./../controllers/blogController");
+const appConfig = require("./../config/appConfig")
+const auth = require("./../middlewares/auth")
 
-const mongoose = require('mongoose');
-const shortid = require('shortid');
-const time = require('./../libs/timeLib');
-const response = require('./../libs/responseLib');
-const logger = require('./../libs/loggerLib');
-const validatInput = require('./../libs/paramsValidationLib');
-const check = require('./../libs/checkLib');
-const passwordLib = require('./../libs/generatePasswordLib');
+module.exports.setRouter = function(app){
 
-const token = require('../libs/tokenLib');
-const authModel = mongoose.model('Auth');
+	let baseUrl = appConfig.apiVersion+'/blogs';
+	
+	
 
-const userModel = mongoose.model('User');
+    app.get(baseUrl+'/all',auth.isAuthenticated,blogController.getAllBlog);
 
-let getAllUser = (req, res) => {
-    userModel.find()
-        .select('-__v -_id')
-        .lean()
-        .exec((err, result) => {
-            if (err) {
-                console.log(err)
-                logger.error(err.message, 'User Controller: getAllUser', 10)
-                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-                res.send(apiResponse)
-            }
-            else if (check.isEmpty(result)) {
-                logger.error('null', 'User Controller: getAllUser', 10)
-                let apiResponse = response.generate(true, 'No user found', 500, null)
-                res.send(apiResponse)
-            }
-            else {
-                let apiResponse = response.generate('false', 'All Details', 200, result)
-                res.send(apiResponse);
-            }
-        })
+	/**
+	 * @api {get} /api/v1/blogs/all Get all blogs
+	 * @apiVersion 0.0.1
+	 * @apiGroup read
+	 *
+	 * @apiParam {String} authToken The token for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "All Blog Details Found",
+	    "status": 200,
+	    "data": [
+					{
+						blogId: "string",
+						title: "string",
+						description: "string",
+						bodyHtml: "string",
+						views: number,
+						isPublished: boolean,
+						category: "string",
+						author: "string",
+						tags: object(type = array),
+						created: "date",
+						lastModified: "date"
+					}
+	    		]
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Failed To Find Blog Details",
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+
+
+    app.get(baseUrl+'/view/:blogId',auth.isAuthenticated,blogController.viewByBlogId);
+
+    /**
+	 * @api {get} /api/v1/blogs/view/:blogId Get a single blog
+	 * @apiVersion 0.0.1
+	 * @apiGroup read
+	 *
+	 * @apiParam {String} authToken The token for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 * @apiParam {String} blogId The blogId should be passed as the URL parameter
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "Blog Found Successfully.",
+	    "status": 200,
+	    "data": {
+	    			_id: "string",
+	    			__v: number
+					blogId: "string",
+					title: "string",
+					description: "string",
+					bodyHtml: "string",
+					views: number,
+					isPublished: boolean,
+					category: "string",
+					author: "string",
+					tags: object(type = array),
+					created: "date",
+					lastModified: "date"
+				}
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Error Occured.",
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+
+    app.get(baseUrl+'/view/by/author/:author',auth.isAuthenticated,blogController.viewByAuthor);
+
+    /**
+	 * @api {get} /api/v1/blogs/view/by/author/:author Get blogs by author
+	 * @apiVersion 0.0.1
+	 * @apiGroup read
+	 *
+	 * @apiParam {String} authToken The token for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 * @apiParam {String} author author of the blog passed as the URL parameter
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "Blogs Found Successfully.",
+	    "status": 200,
+	    "data": [
+					{
+						blogId: "string",
+						title: "string",
+						description: "string",
+						bodyHtml: "string",
+						views: number,
+						isPublished: boolean,
+						category: "string",
+						author: "string",
+						tags: object(type = array),
+						created: "date",
+						lastModified: "date"
+					}
+	    		]
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Error Occured.,
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+
+    app.get(baseUrl+'/view/by/category/:category',auth.isAuthenticated,blogController.viewByCategory);
+
+    /**
+	 * @api {get} /api/v1/blogs/view/by/category/:category Get blogs by category
+	 * @apiVersion 0.0.1
+	 * @apiGroup read
+	 *
+	 * @apiParam {String} authToken The token for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 * @apiParam {String} category category of the blog passed as the URL parameter
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "Blogs Found Successfully.",
+	    "status": 200,
+	    "data": [
+					{
+						blogId: "string",
+						title: "string",
+						description: "string",
+						bodyHtml: "string",
+						views: number,
+						isPublished: boolean,
+						category: "string",
+						author: "string",
+						tags: object(type = array),
+						created: "date",
+						lastModified: "date"
+					}
+	    		]
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Error Occured.,
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+
+    app.post(baseUrl+'/delete/:blogId/',blogController.deleteBlog);
+
+    /**
+	 * @api {post} /api/v1/blogs/:blogId/delete Delete blog by blogId
+	 * @apiVersion 0.0.1
+	 * @apiGroup delete
+	 *
+	 * @apiParam {String} authToken The token for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 * @apiParam {String} blogId blogId of the blog passed as the URL parameter
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "Blog Deleted Successfully",
+	    "status": 200,
+	    "data": []
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Error Occured.,
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+
+    app.put(baseUrl+'/:blogId/edit',auth.isAuthenticated,blogController.editBlog);
+
+    /**
+	 * @api {put} /api/v1/blogs/:blogId/edit Edit blog by blogId
+	 * @apiVersion 0.0.1
+	 * @apiGroup edit
+	 *
+	 * @apiParam {Object} Event The Event for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 * 
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "Blog Edited Successfully.",
+	    "status": 200,
+	    "data": [
+					{
+						blogId: "string",
+						title: "string",
+						description: "string",
+						bodyHtml: "string",
+						views: number,
+						isPublished: boolean,
+						category: "string",
+						author: "string",
+						tags: object(type = array),
+						created: "date",
+						lastModified: "date"
+					}
+	    		]
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Error Occured.,
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+
+    app.post(baseUrl+'/create',auth.isAuthenticated,blogController.createBlog);
+
+    /**
+	 * @api {post} /api/v1/blogs/create Create blog
+	 * @apiVersion 0.0.1
+	 * @apiGroup create
+	 *
+	 * @apiParam {String} authToken The token for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 * @apiParam {String} title title of the blog passed as a body parameter
+	 * @apiParam {String} description description of the blog passed as a body parameter
+	 * @apiParam {String} blogBody blogBody of the blog passed as a body parameter
+	 * @apiParam {String} category category of the blog passed as a body parameter
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "Blog Created successfully",
+	    "status": 200,
+	    "data": [
+					{
+						blogId: "string",
+						title: "string",
+						description: "string",
+						bodyHtml: "string",
+						views: number,
+						isPublished: boolean,
+						category: "string",
+						author: "string",
+						tags: object(type = array),
+						created: "date",
+						lastModified: "date"
+					}
+	    		]
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Error Occured.,
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+
+    app.get(baseUrl+'/:blogId/count/view',auth.isAuthenticated,blogController.increaseBlogView);
+
+
+    /**
+	 * @api {get} /api/v1/blogs/:blogId/count/view Increase Blogs Count
+	 * @apiVersion 0.0.1
+	 * @apiGroup update
+	 *
+	 * @apiParam {String} authToken The token for authentication.(Send authToken as query parameter, body parameter or as a header)
+	 * @apiParam {String} blogId blogId of the blog passed as the URL parameter
+	 *
+	 *  @apiSuccessExample {json} Success-Response:
+	 *  {
+	    "error": false,
+	    "message": "Blog Updated Successfully.",
+	    "status": 200,
+	    "data": [
+					{
+						blogId: "string",
+						title: "string",
+						description: "string",
+						bodyHtml: "string",
+						views: number,
+						isPublished: boolean,
+						category: "string",
+						author: "string",
+						tags: object(type = array),
+						created: "date",
+						lastModified: "date"
+					}
+	    		]
+	    	}
+		}
+	}
+	  @apiErrorExample {json} Error-Response:
+	 *
+	 * {
+	    "error": true,
+	    "message": "Error Occured.,
+	    "status": 500,
+	    "data": null
+	   }
+	 */
+    
+
 }
 
-let getSingleUser = (req, res) => {
-    userModel.findOne({ 'userId': req.params.userId })
-        .select('-password -__v -_id')
-        .lean()
-        .exec((err, result) => {
-            if (err) {
-                console.log(err)
-                logger.error(err.message, 'User Controller: getSingleUser', 10)
-                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-                res.send(apiResponse)
-            }
-            else if (check.isEmpty(result)) {
-                logger.error(err.message, 'User Controller: getSingleUser', 10)
-                let apiResponse = response.generate(true, 'No user found', 500, null)
-                res.send(apiResponse)
-            }
-            else {
-                let apiResponse = response.generate('false', 'All getSingleUser', 200, result)
-                res.send(apiResponse);
-            }
-        })
-}
 
-let deleteUser = (req, res) => {
-    userModel.remove({ 'userId': req.params.userId })
-        .exec((err, result) => {
-            if (err) {
-                console.log(err)
-                logger.error(err.message, 'User Controller: deleteUser', 10)
-                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-                res.send(apiResponse)
-            }
-            else if (check.isEmpty(result)) {
-                logger.error(err.message, 'User Controller: deleteUser', 10)
-                let apiResponse = response.generate(true, 'No user found', 500, null)
-                res.send(apiResponse)
-            }
-            else {
-                let apiResponse = response.generate('false', 'All deleteUser', 200, result)
-                res.send(apiResponse);
-            }
-        })
-}
-
-let editUser = (req, res) => {
-    let options = req.body
-    userModel.update({ 'userId': req.params.userId }, options, { multi: true })
-        .exec((err, result) => {
-            if (err) {
-                console.log(err)
-                logger.error(err.message, 'User Controller: editUser', 10)
-                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-                res.send(apiResponse)
-            }
-            else if (check.isEmpty(result)) {
-                logger.error(err.message, 'User Controller: editUser', 10)
-                let apiResponse = response.generate(true, 'No user found', 500, null)
-                res.send(apiResponse)
-            }
-            else {
-                let apiResponse = response.generate('false', ' editUser', 200, result)
-                res.send(apiResponse);
-            }
-        })
-}
-
-let signUpFunction = (req, res) => {
-
-
-    let validateUserInput = () => {
-        return new Promise((resolve, reject) => {
-            if (req.body.email) {
-                if (!validatInput.email(req.body.email)) {
-                    let apiResponse = response.generate(true, 'Email does not meet Criteria', 400, null)
-                    reject(apiResponse);
-                }
-                else if (check.isEmpty(req.body.password)) {
-                    let apiResponse = response.generate(true, 'Password is missing', 400, null)
-                    reject(apiResponse);
-                }
-                else {
-                    resolve(req);
-                }
-            }
-            else {
-                logger.error('Field Missing During User Creation', 'userController: createUser()', 5)
-                let apiResponse = response.generate(true, 'One or More Parameter(s) is missing', 400, null)
-                reject(apiResponse);
-            }
-        })
-    }// end validation
-
-    let createUser = () => {
-        return new Promise((resolve, reject) => {
-            userModel.findOne({ 'email': req.body.email })
-                .exec((err, retrievedDetails) => {
-                    if (err) {
-                        logger.error(err.message, 'userController:Create User', 500, null)
-                        let apiResponse = response.generate(true, 'Failed to create', 500, null);
-                        return apiResponse;
-                    }
-                    else if (check.isEmpty(retrievedDetails)) {
-                        console.log(req.body);
-                        let newUser = new userModel({
-                            userId: shortid.generate(),
-                            firstName: req.body.firstName,
-                            lastName: req.body.lastName || '',
-                            email: req.body.email.toLowerCase(),
-                            mobileNumber: req.body.mobileNumber,
-                            password: passwordLib.hashPassword(req.body.password),
-                            createdOn: Date.now()
-                        })
-
-                        newUser.save((err, result) => {
-                            if (err) {
-                                console.log(err);
-                                logger.error(err.message, 'UserController:create User', 10)
-                                let apiResponse = response.generate(true, 'Failed to create new user', 500, null);
-                                reject(apiResponse);
-                            }
-                            else {
-                                let newObj = result.toObject();
-                                resolve(newObj);
-                            }
-                        })
-                    }
-                    else {
-                        logger.error('', 'userController: createUser', 10)
-                        let apiResponse = response.generate(true, 'User already exists', 403, null)
-                        reject(apiResponse)
-
-                    }
-                })
-        })
-    }//end create user
-
-    validateUserInput(req,res)
-    .then(createUser)
-    .then((resolve)=>{
-        delete resolve.password;
-        let apiResponse=response.generate(false,'User created',200,resolve)
-        res.send(apiResponse);
-
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.send(err);
-    })
-}
-
-let loginFunction=(req,res)=>{
-
-
-    let findUser=()=>{
-        return new Promise((resolve,reject)=>{
-            if(req.body.email){
-                console.log('Email present');
-                console.log(req.body);
-                userModel.findOne({'email':req.body.email})
-                .exec((err,result)=>{
-                    if(err){
-                        console.log(err)
-                        logger.error('Failed To Retrieve User Data', 'userController: findUser()', 10)
-                        /* generate the error message and the api response message here */
-                        let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
-                        reject(apiResponse)
-                    }
-                    else if(check.isEmpty(result)){
-                        logger.error('No User Found', 'userController: findUser()', 7)
-                        let apiResponse = response.generate(true, 'No User Details Found', 404, null)
-                        reject(apiResponse)
-                    }
-                    else{
-                        logger.info('User Found','userController: findUser()',10);
-                        resolve(result);
-                    }
-                })
-            }
-            else{
-                logger.error('No email found','UserController:Find User',10)
-                let apiResponse = response.generate(true, 'No Email Details Found', 404, null)
-                reject(apiResponse)
-            }
-        })
-    }//end find user
-
-
-    let validatePassword=(retrievedUserDetails)=>{
-        console.log('validating password');
-        return new Promise((resolve,reject)=>{
-            passwordLib.comparePassword(req.body.password,retrievedUserDetails.password,(err,isMatch)=>{
-                if(err){
-                    console.log(err)
-                    logger.error(err.message, 'userController: validatePassword()', 10)
-                    let apiResponse = response.generate(true, 'Login Failed', 500, null)
-                    reject(apiResponse)
-                }
-                else if(isMatch){
-
-                    let retrievedUserDetailsObj=retrievedUserDetails.toObject();
-                    delete retrievedUserDetailsObj.password
-                    delete retrievedUserDetailsObj.__v
-                    delete retrievedUserDetailsObj._id
-                    delete retrievedUserDetailsObj.createdOn
-                    delete retrievedUserDetailsObj.modifiedOn
-                    resolve(retrievedUserDetailsObj);
-                }
-                else{
-                    logger.info('Login Failed Due To Invalid Password', 'userController: validatePassword()', 10)
-                    let apiResponse = response.generate(true, 'Wrong Password.Login Failed', 400, null)
-                    reject(apiResponse)
-                }
-            })
-        })
-    }// end validate password
-
-    let generateToken=(userDetails)=>{
-        console.log('Generating token');
-        console.log(userDetails);
-        return new Promise((resolve,reject)=>{
-            token.generateToken(userDetails,(err,tokenDetails)=>{
-                if(err){
-                    console.log('Error');
-                    let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
-                    reject(apiResponse)
-                }
-                else{
-                    tokenDetails.userId=userDetails.userId
-                    tokenDetails.userDetails=userDetails
-                    resolve(tokenDetails);
-                }
-            })
-        })
-    }//end generate token
-
-
-    let saveToken=(tokenDetails)=>{
-        console.log('Saving token');
-        return new Promise((resolve,reject)=>{
-            authModel.findOne({'userId':tokenDetails.userId},(err,retrievedTokenDetails)=>{
-
-                if (err){
-                    console.log(err.message, 'userController: saveToken', 10)
-                    let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
-                    reject(apiResponse)
-                }
-                else if(check.isEmpty(retrievedTokenDetails)){
-                    let newAuthToken= new authModel({
-                        userId:tokenDetails.userId,
-                        authToken:tokenDetails.token,
-                        tokenSecret:tokenDetails.tokenSecret,
-                        tokenGenerationTime:time.now()
-                    })
-
-                    newAuthToken.save((err,result)=>{
-                        if(err){
-                            logger.error(err.message, 'userController: saveToken', 10)
-                            let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
-                            reject(apiResponse)
-                        }
-                        else{
-
-                            let responseBody={
-                                authToken:result.authToken,
-                                userDetails:tokenDetails.userDetails
-                            }
-                            resolve(responseBody)
-                        }
-                    })
-                }
-
-                else{
-                    retrievedTokenDetails.authToken=tokenDetails.token;
-                    retrievedTokenDetails.tokenSecret=tokenDetails.tokenSecret
-                    retrievedTokenDetails.tokenGenerationTime=time.now()
-                    retrievedTokenDetails.save((err,newTokenDetails)=>{
-                        if (err) {
-                            logger.error(err.message, 'userController: saveToken', 10)
-                            let apiResponse = response.generate(true, 'Failed To Generate Token', 500, null)
-                            reject(apiResponse)
-                        }
-                        else {
-                            let responseBody={
-                                authToken:newTokenDetails.authToken,
-                                userDetails:tokenDetails.userDetails
-                            }
-                            resolve(responseBody);}
-                    })
-                }
-            })
-        })
-    }//end save token
-
-    findUser(req,res)
-    .then(validatePassword)
-    .then(generateToken)
-    .then(saveToken)
-    .then((resolve)=>{
-        let apiResponse=response.generate(false,'Login Successful',200,resolve)
-        res.send(apiResponse)
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.status(err.status)
-        res.send(err)
-    })
-}//end login function
-
-
-let logout=(req,res)=>{
-    authModel.remove({userId:req.params.userId},(err,result)=>{
-        if (err) {
-            console.log(err)
-            logger.error(err.message, 'user Controller: logout', 10)
-            let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
-            res.send(apiResponse)
-        } else if (check.isEmpty(result)) {
-            let apiResponse = response.generate(true, 'Already Logged Out or Invalid UserId', 404, null)
-            res.send(apiResponse)
-        } else {
-            let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
-            res.send(apiResponse)
-        }
-    })
-}
-
-module.exports={
-    getAllUser:getAllUser,
-    getSingleUser:getSingleUser,
-    deleteUser:deleteUser,
-    editUser:editUser,
-    signUpFunction:signUpFunction,
-    loginFunction:loginFunction,
-    logout:logout
-}

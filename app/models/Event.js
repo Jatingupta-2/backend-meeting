@@ -41,8 +41,20 @@ let EventSchema = new Schema({
             type: String,
             default: ''
         
+    },
+    where:{
+        type:String,
+        default:""
+    },
+    purpose:{
+        type:String,
+        default:""
     }
-    
+    ,
+    lastUpdatedBy:{
+        type:String,
+        default:""
+    }
 
     ,
     allDay: {

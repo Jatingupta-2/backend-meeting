@@ -29,6 +29,7 @@ let getAllEvents = (req, res) => {
             }
             else {
                 let apiResponse = response.generate('false', 'All Events', 200, result)
+                console.log(apiResponse)
                 res.send(apiResponse);
             }
         })
@@ -57,7 +58,7 @@ let addEvent = (req, res) => {
     let createEvent = () => {
         return new Promise((resolve, reject) => {
             console.log(req.body);
-            console.log(req.body.actions)
+            
             var i=0;
             var resizable=[];
             for(i=0;i<req.body.resizable.length;i++){
@@ -78,7 +79,10 @@ let addEvent = (req, res) => {
                 allDay: req.body.allDay,
                 resizable:resizable,
                 draggable: req.body.draggable,
-                editTime: time.now()
+                editTime: time.now(),
+                where:req.body.where,
+                purpose:req.body.purpose,
+                lastUpdatedBy:req.body.lastUpdatedBy
                 
             });
 
@@ -94,6 +98,7 @@ let addEvent = (req, res) => {
                 }
                 else{
                     let newObj= result.toObject();
+                    console.log(newObj)
                     resolve(newObj);
                 }
             })
@@ -104,6 +109,7 @@ let addEvent = (req, res) => {
     .then(createEvent)
     .then((resolve)=>{
         let apiResponse=response.generate(false,'Event created',200,resolve)
+        console.log(apiResponse);
         res.send(apiResponse);
     })
     .catch((err)=>{
@@ -159,6 +165,7 @@ let editEvent=(req,res)=>{
     .then(editevent)
     .then((resolve)=>{
         let apiResponse=response.generate(false,'Event Edited',200,resolve)
+        console.log(apiResponse)
         res.send(apiResponse);
     })
     .catch((err)=>{
@@ -185,6 +192,7 @@ let deleteEvent=(req,res)=>{
         }
         else {
             let apiResponse = response.generate('false', ' deleteEvent', 200, result)
+            console.log(apiResponse)
             res.send(apiResponse);
         }
     })

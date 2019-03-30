@@ -17,7 +17,7 @@ const generateCountry = require('../libs/generateCountryCodeLib');
 
 let getAllUser = (req, res) => {
     UserModel.find()
-        .select('-__v -_id')
+        .select('-password -__v -_id')
         .lean()
         .exec((err, result) => {
             if (err) {
@@ -32,7 +32,10 @@ let getAllUser = (req, res) => {
                 res.send(apiResponse)
             }
             else {
+                
                 let apiResponse = response.generate('false', 'All Details', 200, result)
+
+                console.log(apiResponse)
                 res.send(apiResponse);
             }
         })
@@ -57,7 +60,9 @@ let editPassword = (req, res) => {
                 res.send(apiResponse)
             }
             else {
+                
                 let apiResponse = response.generate('false', ' editPassword', 200, result)
+                console.log(apiResponse)
                 res.send(apiResponse);
             }
         })
@@ -176,7 +181,9 @@ let signUpFunction = (req, res) => {
     .then(createUser)
     .then((resolve)=>{
         delete resolve.password;
+        
         let apiResponse=response.generate(false,'User created',200,resolve)
+        console.log(apiResponse)
         res.send(apiResponse);
     })
     .catch((err)=>{
@@ -338,7 +345,9 @@ return new Promise((resolve,reject)=>{
     .then(generateToken)
     .then(saveToken)
     .then((resolve)=>{
+        
         let apiResponse=response.generate(false,'Login Successful',200,resolve)
+        console.log(apiResponse)
         res.send(apiResponse)
     })
     .catch((err)=>{
@@ -364,6 +373,7 @@ let logout=(req,res)=>{
             let apiResponse = response.generate(true, 'Already Logged Out or Invalid UserId', 404, null)
             res.send(apiResponse)
         } else {
+            console.log(apiResponse)
             let apiResponse = response.generate(false, 'Logged Out Successfully', 200, null)
             res.send(apiResponse)
         }
@@ -371,7 +381,32 @@ let logout=(req,res)=>{
 } // end of the logout function.
 
 
+
+let deleteUser = (req, res) => {
+    UserModel.remove({ 'userId': req.params.userId })
+        .exec((err, result) => {
+            if (err) {
+                console.log(err)
+                logger.error(err.message, 'User Controller: deleteUser', 10)
+                let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
+                res.send(apiResponse)
+            }
+            else if (check.isEmpty(result)) {
+                logger.error(err.message, 'User Controller: deleteUser', 10)
+                let apiResponse = response.generate(true, 'No user found', 500, null)
+                res.send(apiResponse)
+            }
+            else {
+                
+                let apiResponse = response.generate('false', 'Delete User', 200, result)
+                console.log(apiResponse)
+                res.send(apiResponse);
+            }
+        })
+}
+
 module.exports = {
+    deleteUser:deleteUser,
     getAllUser:getAllUser,
     signUpFunction: signUpFunction,
     loginFunction: loginFunction,
